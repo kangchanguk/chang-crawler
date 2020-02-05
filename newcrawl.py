@@ -9,6 +9,11 @@ import time
 import numpy as np
 import ssl
 import pytesseract
+import mysql.connector
+from reader import load_data_mall
+
+check=0
+
 
 def hcropimg(path,num):
     im=Image.open(path)
@@ -109,6 +114,8 @@ def crop(path1,num,num1):
                         cropimg =im.crop(area)
                         cropimg.save("{}/{}/crop{}.jpg".format(num,num1,count))
                         count+=1
+                im.close()
+                os.remove(path)
         else:
             im.close()
             os.remove(path)
@@ -121,15 +128,34 @@ def show(url):
     for i in range(len(a)):
         x=a[i].get_attribute("href")
         b=a[i].find_elements_by_tag_name("img")
-        if len(b)>0:
+        if len(b)>0 and x != None:
             li=[]
             li.append(x)
             li.append(b[0].get_attribute("src"))
-            clothes.append(li)
+            li1=[]
+            li1.append(x)
+            li1.append(b[0].get_attribute("ec-data-src"))
+            if len(li)==2:
+                if li[1] is not None:
+                    if 'base64' not in str(li[1]):
+                        clothes.append(li)
+            if len(li1)==2:
+                if li1[1] is not None:
+                    if 'base64' not in str(li[1]):
+                        clothes.append(li)
+    for i in range(len(clothes)):
+        print(i)
+        print(clothes[i][1])
+
+    
+    
+            
+    browser.close()
     return clothes
 
 def godir(clothes,num):
     context = ssl._create_unverified_context()
+ 
     for i in range(len(clothes)):
         if len(clothes[i])>1:
             if not(os.path.isdir("{}/{}".format(num,i))):
@@ -144,6 +170,8 @@ def godir(clothes,num):
                         if "htt" in x:
                             print(x)
                             urllib.request.urlretrieve(x,"{}/{}/{}.png".format(num,i,j))
+                    
+                browser.close()
 
             filelist=os.listdir("{}/{}".format(num,i))
             for k in filelist:
@@ -172,15 +200,21 @@ def download(clothes,num):
     for i in range(len(clothes)):
         if len(clothes[i])>1:
             if clothes[i][1] is not None:
-                if "htt" in clothes[i][1] and "webp" not in clothes[i][1]:
-                    print(clothes[i][1])
-                    f.write(str(clothes[i][0]))
-                    f.write("\n")
-                    if "gif" in clothes[i][1]:
-                        urllib.request.urlretrieve(clothes[i][1],"{}/{}-{}.gif".format(num,num,i))
+                
+                f.write(str(clothes[i][0]))
+                f.write("\n")
+             
+                if "gif" in clothes[i][1]:
+                    urllib.request.urlretrieve(clothes[i][1],"{}/{}-{}.gif".format(num,num,i))
+                    print("{}/{}-{}.gif".format(num,num,i))
 
-                    else:
-                        urllib.request.urlretrieve(clothes[i][1],"{}/{}-{}.png".format(num,num,i))
+                elif "webp" in clothes[i][1]or "jpg" in clothes[i][1]:
+                    urllib.request.urlretrieve(clothes[i][1],"{}/{}-{}.jpg".format(num,num,i))
+                    print("{}/{}-{}.jpg".format(num,num,i))
+
+                elif  "png" in clothes[i][1]:
+                    urllib.request.urlretrieve(clothes[i][1],"{}/{}-{}.png".format(num,num,i))
+                    print("{}/{}-{}.png".format(num,num,i))
 
 def capturegif(path,num):
     filelist=os.listdir(path)
@@ -206,47 +240,54 @@ def capturegif(path,num):
 
 def select(path):
     image=Image.open(path)
+    print(path)
+    global check
     if image.size[0]<300 or image.size[1]<300:
         image.close()
         os.remove(path)
+        check=1
     else:    
         try:
             clothesline=pytesseract.image_to_string(path)
-            if len(clothesline)>5:
+            if len(clothesline)>3:
                 image.close()
                 os.remove(path)
+                check=1
+
         except:
             pass
  
-ssl._create_default_https_context = ssl._create_unverified_context
-myFile=open('kang.txt','r')
-num =0 
-sentence=""
-while True:
-    if myFile.readline()=="":
-        break
-    num += 1
-    url=myFile.readline()
+#main함수 영역
+
+
+if __name__ == '__main__':
+    ssl._create_default_https_context = ssl._create_unverified_context
+    row=load_data_mall()
+    for i in range(len(row)):
+        url = row[i][1]
+        num =i #몇번째 줄의 쇼핑몰 주소로 부터 크롤링 해오는 지를 알려주는 index
+        sentence=""#같은 url의 페이지를 크롤링하는 것을 방지하기 위한 변수
+        if sentence in url:
+            count=0
+            clothes=[]
+            if not(os.path.isdir("{}".format(num))):
+                os.makedirs(os.path.join("{}".format(num)))
+            f=open('{}/{}suburl.txt'.format(num,num),'w',encoding='utf-8',newline='')
+            f.write(url)
+            clothes=show(url)
+            download(clothes,num)
+            f.close()
+            
+            path="{}/".format(num)
+            capturegif(path,num)
+            filelist=os.listdir("{}/".format(num))
+            for i in range(len(filelist)):
+                if ".jpg" in str(i) or ".png" in str(i):
+                    check=0
+                    path="{}/".format(num)+str(i)
+                    select(path)
+                                    
+            godir(clothes,num)
+            sentence=url
     
-    if sentence in url:
-        count=0
-        clothes=[]
-        if not(os.path.isdir("{}".format(num))):
-            os.makedirs(os.path.join("{}".format(num)))
-        f=open('{}/{}suburl.txt'.format(num,num),'w',encoding='utf-8',newline='')
-        f.write(url)
-        clothes=show(url)
-        download(clothes,num)
-        f.close()
-        path="{}/".format(num)
-        capturegif(path,num)
-        filelist=os.listdir("{}/".format(num))
-        for i in filelist:
-            if ".jpg" in str(i) or ".png" in str(i):
-                path="{}/".format(num)+str(i)
-                print(path)
-                select(path)
-        godir(clothes,num)
-        print("num:{}".format(num))
-        sentence=url
-        
+            
