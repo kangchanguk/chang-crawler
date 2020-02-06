@@ -11,7 +11,7 @@ import ssl
 import pytesseract
 import mysql.connector
 from reader import load_data_mall
-
+from imagestore import auto_store_to_db
 check=0
 
 
@@ -265,7 +265,8 @@ if __name__ == '__main__':
     row=load_data_mall()
     for i in range(len(row)):
         url = row[i][1]
-        num =i #몇번째 줄의 쇼핑몰 주소로 부터 크롤링 해오는 지를 알려주는 index
+        num =i #폴더 번호-해당 번호의 쇼핑몰 url을 의미한다.
+
         sentence=""#같은 url의 페이지를 크롤링하는 것을 방지하기 위한 변수
         if sentence in url:
             count=0
@@ -280,14 +281,17 @@ if __name__ == '__main__':
             
             path="{}/".format(num)
             capturegif(path,num)
-            filelist=os.listdir("{}/".format(num))
-            for i in range(len(filelist)):
-                if ".jpg" in str(i) or ".png" in str(i):
-                    check=0
-                    path="{}/".format(num)+str(i)
-                    select(path)
+            
+        filelist=os.listdir("{}/".format(num))
+        for i in filelist:
+            print(i)
+            if ".jpg" in str(i) or ".png" in str(i):
+                check=0
+                path="{}/".format(num)+i
+                select(path)
                                     
             godir(clothes,num)
             sentence=url
-    
             
+        auto_store_to_db(num)
+        '''
