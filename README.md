@@ -1,4 +1,4 @@
-# shopping mall crawler   
+# shopping mall crawler(쇼핑몰 크롤러)   
 
 
 
@@ -7,14 +7,13 @@
 Install the dependencies and devDependencies and start the server.
 
 ```sh
-$ pip install selenium
-$ pip install requests
-$ pip install pillow
-$ pip install opencv-python
-$ pip install pytesseract
-$ pip install mysql-connector
+$ pip install -r chang-crawler.txt
 ```
+and
+please install chromedriver for your chrome version
+[chromedriver 다운로드]("https://chromedriver.chromium.org/downloads")
 
+반드시 같은 new-crawler.py 파일과 같은 폴더에 chromedriver가 있어야 합니다.
 For production environments...
 
 ```sh
@@ -43,7 +42,7 @@ $ maria DB
 #### License
 ----
 
-kang chang uk
+kang chang uk(강창욱)
 
 
 **Free Software, HellO everyone!**
