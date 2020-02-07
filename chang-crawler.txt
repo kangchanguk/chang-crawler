@@ -1,0 +1,7 @@
+selenium
+requests
+pillow
+opencv-python
+pytesseract
+mysql-connector
+pymysql
