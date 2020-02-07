@@ -265,14 +265,13 @@ if __name__ == '__main__':
     ssl._create_default_https_context = ssl._create_unverified_context
     f = open('fashionurl.csv','r',newline='')
     wr=csv.reader(f)
-    for i in range(len(wr)):
+    index=0
+    for i in wr:
         deletelist=[]
         url = wr[i][1]
         
-        num =i #폴더 번호-해당 번호의 쇼핑몰 url을 의미한다.
-        if i==0:
-            continue
-    
+        num =index #폴더 번호-해당 번호의 쇼핑몰 url을 의미한다.
+   
         count=0
         clothes=[]
         if not(os.path.isdir("{}".format(num))):
@@ -281,6 +280,7 @@ if __name__ == '__main__':
         download(clothes,num)                     
         godir(clothes,num)
         print(deletelist)
+        index=index+1
       
 
         
