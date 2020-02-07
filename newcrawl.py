@@ -203,8 +203,7 @@ def download(clothes,num):
         if len(clothes[i])>1:
             if clothes[i][1] is not None:
                 
-                f.write(str(clothes[i][0]))
-                f.write("\n")
+        
                 try:
                     if "gif" in clothes[i][1]:
                         urllib.request.urlretrieve(clothes[i][1],"{}/{}-{}.gif".format(num,num,i))
