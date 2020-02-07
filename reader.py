@@ -28,13 +28,15 @@ def read_url_from_csv():
     return rdr
 
 def save_data_mall(name,url):
-    conn = mysql.connector.connect(**config)
-    cursor=conn.cursor()
-    sql = "INSERT into mall(id,url,done) values (%s, %s, %s)"
-    cursor.execute(sql,(name,url,False))
-    conn.commit()
-    conn.close()
-
+    try:
+        conn = mysql.connector.connect(**config)
+        cursor=conn.cursor()
+        sql = "INSERT into mall(id,url,done) values (%s, %s, %s)"
+        cursor.execute(sql,(name,url,False))
+        conn.commit()
+        conn.close()
+    except:
+        pass
 def load_data_mall():
     conn = mysql.connector.connect(**config)
     cursor=conn.cursor()
@@ -60,8 +62,6 @@ def clear_csv():
 
 
 if __name__ == '__main__':
-    clear_csv()
-    '''
     write_url_to_csv("benito","https://www.benito.co.kr/")
     write_url_to_csv("hypnotic","http://www.hypnotic.co.kr")
     write_url_to_csv("sedy","https://sedy.co.kr")
@@ -72,7 +72,6 @@ if __name__ == '__main__':
 
     for row in list:
         save_data_mall(row[0],row[1])
-    '''
     print(load_data_mall())
 
 
